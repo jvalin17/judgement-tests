@@ -6,6 +6,8 @@ Test suite and Claude Code dev skills for [jvalin17/judgement](https://github.co
 
 All tests for the Judgement project live here — the main repo has zero test files. This keeps the game repo light and all test coverage in one place, plus dev workflow skills that automate test writing and shipping.
 
+**Coverage:** 173/216 public methods tested (80.1%). See [TEST_AUDIT.md](TEST_AUDIT.md) for the full breakdown.
+
 ---
 
 ## Test Coverage
@@ -56,21 +58,21 @@ git clone https://github.com/jvalin17/judgement.git
 git clone https://github.com/jvalin17/judgement-tests.git
 ```
 
-Run everything (smoke + suite):
+Run the full test suite:
 
 ```bash
 cd judgement
 ./scripts/run-test-suite.sh
 ```
 
-Or run just the suite tests manually:
+Or run backend/frontend separately:
 
 ```bash
-# Backend suite
+# Backend
 cd judgement
 JUDGEMENT_REPO=$(pwd) python3 -m pytest ../judgement-tests/backend/ -v
 
-# Frontend suite (copies test files into main repo, runs, cleans up)
+# Frontend (copies test files into main repo, runs, cleans up)
 # Use run-test-suite.sh — it handles the copy/cleanup automatically
 ```
 
