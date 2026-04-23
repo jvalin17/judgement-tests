@@ -1,27 +1,44 @@
 # Judgement Test Suite
 
-Comprehensive test suite for [jvalin17/judgement](https://github.com/jvalin17/judgement). Runs automatically on every push to `main` via GitHub Actions.
+[![Full Test Suite](https://github.com/jvalin17/judgement/actions/workflows/test-suite.yml/badge.svg)](https://github.com/jvalin17/judgement/actions/workflows/test-suite.yml)
 
-## What's here
+Comprehensive test suite for [jvalin17/judgement](https://github.com/jvalin17/judgement) — a trick-taking card game with AI opponents. Runs automatically on every push to `main` via GitHub Actions.
 
-Exhaustive tests covering edge cases, AI strategies, ML analysis, component rendering, and integration flows. The main repo keeps basic smoke tests for quick local runs.
+The main repo keeps 143 basic smoke tests for quick local runs. This repo adds 484 exhaustive tests covering AI strategies, ML analysis, all UI components, edge cases, and integration flows.
 
-| Category | Tests | Coverage |
-|----------|-------|----------|
-| Backend — AI strategies | 32 | All difficulty levels, hand eval, personality |
-| Backend — Analysis/Persona | 86 | Fingerprint, cosine similarity, persona matching |
-| Backend — Round manager | 60 | Full round lifecycle, bid/play validation |
-| Backend — Card play helpers | 33 | would_win, best_winning_card, dump_lowest |
-| Backend — Game manager | 25 | Speed, nerf, persona, delays |
-| Backend — Smart AI (ML) | 23 | Features, kNN, collector, integration |
-| Backend — Edge cases | 22 | Invalid inputs, duplicate names, errors |
-| Backend — Engine correctness | 18 | Extra state machine coverage |
-| Backend — Info isolation | 15 | AI never sees other hands |
-| Backend — Multiplayer | 6 | Full lobby-to-play flow |
-| Frontend — Components | 112 | All UI components (common, game, lobby, scoreboard) |
-| Frontend — Types | 42 | Card, settings, variant type helpers |
+---
 
-## Running locally
+## Test Coverage
+
+### Backend (320 tests)
+
+| File | Tests | What it covers |
+|------|-------|----------------|
+| `test_analysis.py` | 86 | Play style fingerprinting, cosine similarity, persona tier matching |
+| `test_round_manager.py` | 60 | Full round lifecycle, bid/play validation, dealer constraints |
+| `test_card_play.py` | 33 | `would_win`, `best_winning_card`, `dump_lowest` helpers |
+| `test_ai.py` | 32 | All difficulty levels, hand evaluation, personality system |
+| `test_game_manager_unit.py` | 25 | Speed/nerf adjustment, persona assignment, AI delays |
+| `test_smart_ai.py` | 23 | Feature extraction, kNN model, decision collector, integration |
+| `test_edge_cases.py` | 22 | Invalid inputs, duplicate names, boundary conditions |
+| `test_engine_correctness.py` | 18 | State machine transitions, phase guards |
+| `test_information_isolation.py` | 15 | AI never sees other players' hands |
+| `test_multiplayer_integration.py` | 6 | Full lobby-to-play multiplayer flow |
+
+### Frontend (164 tests)
+
+| File | Tests | What it covers |
+|------|-------|----------------|
+| `components/common/` | 37 | Button, Card, CardBack, Modal, SuitIcon, SettingsModal |
+| `components/game/` | 62 | BidSelector, OpponentArea, PlayerHand, PlayerInfo, RoundInfo, TrickArea |
+| `components/scoreboard/` | 18 | Scoreboard table, FinalResults with rankings |
+| `context/SettingsContext` | 8 | Settings provider, CSS variable injection, update functions |
+| `services/api` | 27 | All REST client functions, error handling, fallback messages |
+| `types/` | 12 | Card display helpers, settings enums, variant labels/limits |
+
+---
+
+## Running Locally
 
 Clone both repos side by side:
 
@@ -30,31 +47,35 @@ git clone https://github.com/jvalin17/judgement.git
 git clone https://github.com/jvalin17/judgement-tests.git
 ```
 
-Run the test suite:
+Run everything (smoke + suite):
 
 ```bash
 cd judgement
-./run-test-suite.sh
+./scripts/run-test-suite.sh
 ```
 
-Or manually:
+Or run just the suite tests manually:
 
 ```bash
-# Backend
+# Backend suite
 cd judgement
-python3 -m pytest ../judgement-tests/backend/ -v
+JUDGEMENT_REPO=$(pwd) python3 -m pytest ../judgement-tests/backend/ -v
 
-# Frontend
-cd judgement/frontend
-npx vitest run --config ../../judgement-tests/vitest.config.ts
+# Frontend suite (copies test files into main repo, runs, cleans up)
+# Use run-test-suite.sh — it handles the copy/cleanup automatically
 ```
+
+### How it works
+
+- **Backend:** `conftest.py` adds the main repo to `sys.path` via `JUDGEMENT_REPO` env var (or auto-detects sibling `judgement/` directory). Tests import directly from `backend.app.*`.
+- **Frontend:** Suite test files are copied into the main repo's `frontend/src/` at runtime so that relative imports resolve against the actual source tree. The `run-test-suite.sh` script handles this copy and cleanup.
+
+---
 
 ## CI
 
-The main repo has a GitHub Actions workflow (`.github/workflows/test-suite.yml`) that:
+The main repo's GitHub Actions workflow ([`test-suite.yml`](https://github.com/jvalin17/judgement/blob/main/.github/workflows/test-suite.yml)) runs on every push to `main`:
 
-1. Checks out both repos
-2. Installs dependencies
-3. Runs smoke tests (main repo)
-4. Runs full test suite (this repo)
-5. Reports pass/fail on every commit
+1. **Smoke tests** — main repo's 143 tests (backend + frontend)
+2. **Full suite** — checks out this repo, runs all 484 tests
+3. **Test summary** — results reported via JUnit XML
