@@ -825,6 +825,83 @@ class TestAllPersonasByDifficulty:
             )
             recent.append(persona.id)
 
+    def test_anchor_does_not_dominate_consistent_player(self):
+        """A consistent player should not get The Anchor more than 15% of the time in 100 picks."""
+        vec = {
+            "risk": 0.4, "planning": 0.7, "patience": 0.7, "aggression": 0.4,
+            "adaptability": 0.5, "consistency": 0.85, "boldness": 0.45,
+            "precision": 0.75, "resilience": 0.6, "clutch": 0.7, "trajectory": 0.5,
+        }
+        anchor_count = 0
+        recent = []
+        for seed in range(100):
+            persona = pick_persona(vec, recent_ids=list(recent),
+                                   rng=random.Random(seed), tier="competitive")
+            if persona.id == "anchor":
+                anchor_count += 1
+            recent.append(persona.id)
+            if len(recent) > 15:
+                recent = recent[-15:]
+        assert anchor_count <= 15, (
+            f"The Anchor selected {anchor_count}/100 times — should be <= 15 for variety"
+        )
+
+    def test_no_single_persona_exceeds_20_percent_in_100_picks(self):
+        """No persona should dominate more than 20% of picks across varied player profiles."""
+        profiles = [
+            {dim: 0.5 for dim in DIMENSIONS},  # neutral
+            {dim: 0.9 for dim in DIMENSIONS},  # maxed
+            {dim: 0.1 for dim in DIMENSIONS},  # minimal
+            {"risk": 0.8, "planning": 0.3, "patience": 0.2, "aggression": 0.9,
+             "adaptability": 0.5, "consistency": 0.3, "boldness": 0.8,
+             "precision": 0.3, "resilience": 0.5, "clutch": 0.5, "trajectory": 0.5},  # aggressive
+        ]
+        for profile_idx, vec in enumerate(profiles):
+            counts = {}
+            recent = []
+            for seed in range(100):
+                persona = pick_persona(vec, recent_ids=list(recent),
+                                       rng=random.Random(seed), tier="competitive")
+                counts[persona.id] = counts.get(persona.id, 0) + 1
+                recent.append(persona.id)
+                if len(recent) > 15:
+                    recent = recent[-15:]
+            for persona_id, count in counts.items():
+                assert count <= 20, (
+                    f"Profile {profile_idx}: '{persona_id}' picked {count}/100 times (max 20)"
+                )
+
+    def test_anchor_consistency_weight_not_excessive(self):
+        """The Anchor's consistency weight should not exceed 1.5x (was 2.0, caused dominance)."""
+        anchor = get_persona_by_id("anchor")
+        consistency_weight = anchor.weights.get("consistency", 1.0)
+        assert consistency_weight <= 1.5, (
+            f"Anchor consistency weight is {consistency_weight} — max 1.5 to prevent dominance"
+        )
+
+    def test_anchor_trigger_bonus_not_excessive(self):
+        """The Anchor's trigger bonus should be <= 0.10 (was 0.15, caused dominance)."""
+        anchor = get_persona_by_id("anchor")
+        for trigger in anchor.triggers:
+            bonus = trigger.get("bonus", 0)
+            assert bonus <= 0.10, (
+                f"Anchor trigger bonus is {bonus} — max 0.10 to prevent dominance"
+            )
+
+    def test_recent_ids_penalty_prevents_immediate_repeat(self):
+        """A persona just picked should almost never repeat on the next pick."""
+        vec = {dim: 0.5 for dim in DIMENSIONS}
+        repeat_count = 0
+        for seed in range(100):
+            rng = random.Random(seed)
+            first = pick_persona(vec, recent_ids=[], rng=rng, tier="competitive")
+            second = pick_persona(vec, recent_ids=[first.id], rng=random.Random(seed + 1000), tier="competitive")
+            if first.id == second.id:
+                repeat_count += 1
+        assert repeat_count <= 10, (
+            f"Immediate repeats: {repeat_count}/100 — penalty should prevent most repeats"
+        )
+
     def _assert_category_reachable(self, category, tier):
         """Verify every persona in a category is in the allowed set for the tier."""
         personas_in_cat = self.by_category.get(category, [])
