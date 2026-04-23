@@ -47,7 +47,7 @@ class TestPersonaLoader:
                 assert value >= 0.0, f"{persona.id}.weights.{dim} = {value}"
 
     def test_all_personas_have_required_fields(self):
-        valid_categories = {"superhero", "animal", "poker", "cartoon", "pokemon", "mythology", "achievement"}
+        valid_categories = {"superhero", "animal", "cartoon", "pokemon", "mythology", "achievement"}
         for persona in load_personas():
             assert persona.id
             assert persona.name
@@ -64,7 +64,7 @@ class TestPersonaLoader:
 
     def test_categories_all_represented(self):
         categories = {persona.category for persona in load_personas()}
-        assert categories == {"superhero", "animal", "poker", "cartoon", "pokemon", "mythology", "achievement"}
+        assert categories == {"superhero", "animal", "cartoon", "pokemon", "mythology", "achievement"}
 
     def test_key_dims_returns_top_3(self):
         persona = get_persona_by_id("batman")
@@ -692,7 +692,7 @@ class TestAllPersonasByDifficulty:
     def test_category_to_tier_mapping(self):
         """Verify which categories belong to which tier groups."""
         assert TIER_ELITE == {"superhero", "mythology"}
-        assert TIER_COMPETITIVE == {"achievement", "poker"}
+        assert TIER_COMPETITIVE == {"achievement"}
         assert TIER_STANDARD == {"cartoon", "pokemon"}
         assert TIER_CASUAL == {"animal"}
 
@@ -708,12 +708,12 @@ class TestAllPersonasByDifficulty:
         assert "achievement" not in TIERS_BY_LEVEL["casual"]
 
     def test_elite_picks_from_all_75_never_leak(self):
-        """Pick 75 times at elite tier — every result must be superhero/mythology/achievement/poker."""
+        """Pick 75 times at elite tier — every result must be superhero/mythology/achievement."""
         allowed = TIERS_BY_LEVEL["elite"]
         self._pick_n_and_verify(75, "elite", allowed)
 
     def test_competitive_picks_from_all_75_never_leak(self):
-        """Pick 75 times at competitive tier — every result must be achievement/poker/cartoon/pokemon."""
+        """Pick 75 times at competitive tier — every result must be achievement/cartoon/pokemon."""
         allowed = TIERS_BY_LEVEL["competitive"]
         self._pick_n_and_verify(75, "competitive", allowed)
 
@@ -749,8 +749,8 @@ class TestAllPersonasByDifficulty:
     def test_every_achievement_reachable_at_competitive(self):
         self._assert_category_reachable("achievement", "competitive")
 
-    def test_every_poker_reachable_at_competitive(self):
-        self._assert_category_reachable("poker", "competitive")
+    def test_every_cartoon_reachable_at_competitive(self):
+        self._assert_category_reachable("cartoon", "competitive")
 
     def test_every_cartoon_reachable_at_standard(self):
         self._assert_category_reachable("cartoon", "standard")
@@ -796,7 +796,7 @@ class TestAllPersonasByDifficulty:
                 persona = pick_persona(vec, recent_ids=list(recent),
                                        rng=random.Random(seed + vec_idx * 100), tier="casual")
                 cat = persona.category
-                assert cat not in ("superhero", "mythology", "achievement", "poker", "cartoon", "pokemon"), (
+                assert cat not in ("superhero", "mythology", "achievement", "cartoon", "pokemon"), (
                     f"Vec {vec_idx} seed {seed}: got '{cat}' persona '{persona.name}' at casual tier"
                 )
                 recent.append(persona.id)
