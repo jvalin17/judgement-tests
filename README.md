@@ -1,10 +1,10 @@
-# Judgement Test Suite
+# Judgement Test Suite & Dev Skills
 
 [![Full Test Suite](https://github.com/jvalin17/judgement/actions/workflows/test-suite.yml/badge.svg)](https://github.com/jvalin17/judgement/actions/workflows/test-suite.yml)
 
-Comprehensive test suite for [jvalin17/judgement](https://github.com/jvalin17/judgement) — a trick-taking card game with AI opponents. Runs automatically on every push to `main` via GitHub Actions.
+Test suite and Claude Code dev skills for [jvalin17/judgement](https://github.com/jvalin17/judgement) — a trick-taking card game with AI opponents. Runs automatically on every push to `main` via GitHub Actions.
 
-The main repo keeps 143 basic smoke tests for quick local runs. This repo adds 484 exhaustive tests covering AI strategies, ML analysis, all UI components, edge cases, and integration flows.
+The main repo keeps 143 basic smoke tests for quick local runs. This repo adds 484 exhaustive tests covering AI strategies, ML analysis, all UI components, edge cases, and integration flows — plus dev workflow skills that automate test writing and shipping.
 
 ---
 
@@ -69,6 +69,37 @@ JUDGEMENT_REPO=$(pwd) python3 -m pytest ../judgement-tests/backend/ -v
 
 - **Backend:** `conftest.py` adds the main repo to `sys.path` via `JUDGEMENT_REPO` env var (or auto-detects sibling `judgement/` directory). Tests import directly from `backend.app.*`.
 - **Frontend:** Suite test files are copied into the main repo's `frontend/src/` at runtime so that relative imports resolve against the actual source tree. The `run-test-suite.sh` script handles this copy and cleanup.
+
+---
+
+## Claude Code Skills
+
+This repo includes dev workflow skills. To use them, launch Claude Code with this repo as an additional directory:
+
+```bash
+claude --add-dir ../judgement-tests
+```
+
+| Skill | Command | What it does |
+|-------|---------|-------------|
+| **write-tests** | `/write-tests` | Analyzes code changes, generates unit and integration tests, adds them to this repo. Run after every feature, fix, or refactor. |
+| **test-suite** | `/test-suite` | Clones this repo (if needed), runs all tests (smoke + suite), blocks if anything fails. |
+| **ship-checklist** | `/ship-checklist` | Full pre-push checklist: write tests, run suite, update docs, commit. |
+
+### Dev workflow
+
+```
+1. Write code in judgement/
+2. /write-tests          ← generates tests here
+3. /test-suite           ← runs all tests, blocks if any fail
+4. /ship-checklist       ← docs, release notes, commit, push
+```
+
+Or just run `/ship-checklist` — it calls the other two in order.
+
+### Contributing skills
+
+Add a directory under `.claude/skills/<skill-name>/` with a `SKILL.md` file and open a PR. See existing skills for the format.
 
 ---
 
