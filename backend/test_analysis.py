@@ -871,22 +871,43 @@ class TestAllPersonasByDifficulty:
                     f"Profile {profile_idx}: '{persona_id}' picked {count}/100 times (max 20)"
                 )
 
-    def test_anchor_consistency_weight_not_excessive(self):
-        """The Anchor's consistency weight should not exceed 1.5x (was 2.0, caused dominance)."""
-        anchor = get_persona_by_id("anchor")
-        consistency_weight = anchor.weights.get("consistency", 1.0)
-        assert consistency_weight <= 1.5, (
-            f"Anchor consistency weight is {consistency_weight} — max 1.5 to prevent dominance"
-        )
+    def test_no_persona_weight_exceeds_1_5(self):
+        """No persona should have any dimension weight above 1.5 to prevent single-dimension dominance."""
+        for persona in load_personas():
+            for dim, weight in persona.weights.items():
+                assert weight <= 1.5, (
+                    f"{persona.id}.weights.{dim} = {weight} — max 1.5 to prevent dominance"
+                )
 
-    def test_anchor_trigger_bonus_not_excessive(self):
-        """The Anchor's trigger bonus should be <= 0.10 (was 0.15, caused dominance)."""
-        anchor = get_persona_by_id("anchor")
-        for trigger in anchor.triggers:
-            bonus = trigger.get("bonus", 0)
-            assert bonus <= 0.10, (
-                f"Anchor trigger bonus is {bonus} — max 0.10 to prevent dominance"
-            )
+    def test_no_trigger_bonus_exceeds_0_08(self):
+        """No persona trigger bonus should exceed 0.08 to prevent trigger-based dominance."""
+        for persona in load_personas():
+            for trigger in persona.triggers:
+                bonus = trigger.get("bonus", 0)
+                assert bonus <= 0.08, (
+                    f"{persona.id} trigger bonus is {bonus} — max 0.08 to prevent dominance"
+                )
+
+    def test_zen_master_does_not_dominate_patient_player(self):
+        """A patient player should not get Zen Master more than 15% of the time."""
+        vec = {
+            "risk": 0.3, "planning": 0.8, "patience": 0.9, "aggression": 0.3,
+            "adaptability": 0.5, "consistency": 0.85, "boldness": 0.3,
+            "precision": 0.8, "resilience": 0.6, "clutch": 0.75, "trajectory": 0.5,
+        }
+        zen_count = 0
+        recent = []
+        for seed in range(100):
+            persona = pick_persona(vec, recent_ids=list(recent),
+                                   rng=random.Random(seed), tier="competitive")
+            if persona.id == "zen_master":
+                zen_count += 1
+            recent.append(persona.id)
+            if len(recent) > 15:
+                recent = recent[-15:]
+        assert zen_count <= 15, (
+            f"Zen Master selected {zen_count}/100 times — should be <= 15 for variety"
+        )
 
     def test_recent_ids_penalty_prevents_immediate_repeat(self):
         """A persona just picked should almost never repeat on the next pick."""
