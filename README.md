@@ -12,11 +12,11 @@ All tests for the Judgement project live here — the main repo has zero test fi
 
 ## Test Coverage
 
-### Backend (442 tests)
+### Backend (448 tests)
 
 | File | Tests | What it covers |
 |------|-------|----------------|
-| `test_analysis.py` | 86 | Play style fingerprinting, cosine similarity, persona tier matching |
+| `test_analysis.py` | 92 | Play style fingerprinting, persona tier matching, balance caps |
 | `test_round_manager.py` | 60 | Full round lifecycle, bid/play validation, dealer constraints |
 | `test_api_rest.py` | 40 | REST endpoints, lobby, quick-join, AI auto-play |
 | `test_card_play.py` | 33 | `would_win`, `best_winning_card`, `dump_lowest` helpers |
@@ -119,6 +119,6 @@ Add a directory under `.claude/skills/<skill-name>/` with a `SKILL.md` file and 
 The main repo's GitHub Actions workflow ([`test-suite.yml`](https://github.com/jvalin17/judgement/blob/main/.github/workflows/test-suite.yml)) runs on every push to `main`:
 
 1. Checks out both repos
-2. Runs all 674 tests (442 backend + 232 frontend)
+2. Runs all 680 tests (448 backend + 232 frontend)
 3. TypeScript check
 4. Test summary reported via JUnit XML
