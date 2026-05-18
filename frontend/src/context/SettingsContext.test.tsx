@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { SettingsProvider, useSettings } from "./SettingsContext";
@@ -9,6 +9,9 @@ function wrapper({ children }: { children: ReactNode }) {
 }
 
 describe("SettingsContext", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
   it("provides default settings", () => {
     const { result } = renderHook(() => useSettings(), { wrapper });
     expect(result.current.settings).toEqual(DEFAULT_SETTINGS);

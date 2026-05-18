@@ -119,7 +119,7 @@ describe("joinGame", () => {
     const result = await api.joinGame("g1", "Bob");
     expect(result.player_id).toBe("p2");
     const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
-    expect(callBody).toEqual({ player_name: "Bob" });
+    expect(callBody).toEqual({ player_name: "Bob", share_data: false });
   });
 });
 
