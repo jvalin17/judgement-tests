@@ -39,16 +39,16 @@ describe("PlayerSeat", () => {
     expect(scoreBadge).toHaveTextContent("42");
   });
 
-  it("applies active class to bid badge when it is the player's turn", () => {
+  it("applies active class to avatar when it is the player's turn", () => {
     renderSeat({ player: makePlayer({ name: "Bot1" }), ...defaultProps, isCurrentTurn: true });
-    const badge = screen.getByTestId("bid-Bot1");
-    expect(badge.className).toContain("bidBadgeActive");
+    const avatar = screen.getByTestId("bid-Bot1");
+    expect(avatar.className).toContain("seatAvatarActive");
   });
 
   it("does not apply active class when not the player's turn", () => {
     renderSeat({ player: makePlayer({ name: "Bot1" }), ...defaultProps, isCurrentTurn: false });
-    const badge = screen.getByTestId("bid-Bot1");
-    expect(badge.className).not.toContain("bidBadgeActive");
+    const avatar = screen.getByTestId("bid-Bot1");
+    expect(avatar.className).not.toContain("seatAvatarActive");
   });
 
   it("shows NOW pill when it is the player's turn", () => {
@@ -76,7 +76,7 @@ describe("PlayerSeat", () => {
     expect(bidBadge).not.toBe(scoreBadge);
   });
 
-  it("renders in order: cards with bid badge, then name, then score badge", () => {
+  it("renders in order: avatar with bid badge, then name, then score badge", () => {
     const { container } = renderSeat({
       player: makePlayer({ name: "Jalebi" }),
       ...defaultProps,
@@ -86,11 +86,11 @@ describe("PlayerSeat", () => {
     });
     const seat = container.firstElementChild!;
     const children = Array.from(seat.children);
-    // child 0: seatCards (contains card fan + bid badge)
+    // child 0: seatAvatar (is the bid element)
     // child 1: seatName
     // child 2: scoreBadge
     expect(children.length).toBeGreaterThanOrEqual(3);
-    expect(children[0].querySelector("[data-testid='bid-Jalebi']")).toBeTruthy();
+    expect(children[0]).toBe(screen.getByTestId("bid-Jalebi"));
     expect(children[1].textContent).toBe("Jalebi");
     expect(children[2]).toBe(screen.getByTestId("score-Jalebi"));
   });
