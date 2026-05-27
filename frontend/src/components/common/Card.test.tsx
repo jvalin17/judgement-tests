@@ -18,9 +18,7 @@ function renderCard(overrides: Partial<{
     ...overrides,
   };
   return render(
-    <SettingsProvider>
-      <Card {...props} />
-    </SettingsProvider>
+    <Card {...props} />
   );
 }
 
