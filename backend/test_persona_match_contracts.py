@@ -35,7 +35,7 @@ class TestPersonaLoaderContracts:
         assert len(personas) > 0
 
     def test_persona_schema_has_required_fields(self):
-        valid_categories = {"superhero", "animal", "poker", "cartoon", "pokemon", "mythology", "achievement"}
+        valid_categories = {"superhero", "animal", "cartoon", "pokemon", "mythology", "achievement", "bollywood", "anime"}
         for persona in load_personas():
             assert persona.id
             assert persona.name
@@ -121,9 +121,9 @@ class TestScoreContracts:
 
 class TestBestPersonasContracts:
     def test_returns_top_k_sorted_and_unique(self):
-        top = best_personas(_neutral_vec(), top_k=7)
+        top = best_personas(_neutral_vec(), top_k=12)
 
-        assert len(top) == 7
+        assert len(top) == 12
         ids = [pid for pid, _ in top]
         scores = [score for _, score in top]
         assert len(set(ids)) == len(ids)

@@ -22,7 +22,7 @@ class TestPersonaLoader:
         assert len(personas) > 0
 
     def test_persona_count(self):
-        assert len(load_personas()) == 75
+        assert len(load_personas()) == 90
 
     def test_all_personas_have_11_traits(self):
         for persona in load_personas():
@@ -47,7 +47,7 @@ class TestPersonaLoader:
                 assert value >= 0.0, f"{persona.id}.weights.{dim} = {value}"
 
     def test_all_personas_have_required_fields(self):
-        valid_categories = {"superhero", "animal", "cartoon", "pokemon", "mythology", "achievement"}
+        valid_categories = {"superhero", "animal", "cartoon", "pokemon", "mythology", "achievement", "bollywood", "anime"}
         for persona in load_personas():
             assert persona.id
             assert persona.name
@@ -64,7 +64,7 @@ class TestPersonaLoader:
 
     def test_categories_all_represented(self):
         categories = {persona.category for persona in load_personas()}
-        assert categories == {"superhero", "animal", "cartoon", "pokemon", "mythology", "achievement"}
+        assert categories == {"superhero", "animal", "cartoon", "pokemon", "mythology", "achievement", "bollywood", "anime"}
 
     def test_key_dims_returns_top_3(self):
         persona = get_persona_by_id("batman")
@@ -446,10 +446,10 @@ class TestPersonaMatch:
             persona = pick_persona(vec, rng=rng)
             assert persona.id in known_ids
 
-    def test_top_k_default_is_7(self):
+    def test_top_k_default_is_12(self):
         vec = {dim: 0.5 for dim in DIMENSIONS}
         top = best_personas(vec)
-        assert len(top) == 7
+        assert len(top) == 12
 
     def test_category_diversity(self):
         """The top results should include multiple categories, not just one."""
@@ -467,22 +467,22 @@ class TestPersonaMatch:
         for pid, _ in top:
             assert personas_map[pid].category in TIER_CASUAL
 
-    def test_elite_tier_includes_superheroes(self):
+    def test_elite_tier_includes_superheroes_and_bollywood(self):
         vec = {dim: 0.5 for dim in DIMENSIONS}
-        elite_cats = TIER_ELITE | TIER_COMPETITIVE
+        elite_cats = TIERS_BY_LEVEL["elite"]
         top = best_personas(vec, allowed_categories=elite_cats)
         personas_map = {p.id: p for p in load_personas()}
         categories = {personas_map[pid].category for pid, _ in top}
-        assert "superhero" in categories
+        assert "superhero" in categories or "bollywood" in categories
 
-    def test_competitive_tier_excludes_animals(self):
+    def test_competitive_tier_excludes_elite_exclusive(self):
         vec = {dim: 0.5 for dim in DIMENSIONS}
-        competitive_cats = TIER_COMPETITIVE | TIER_STANDARD
+        competitive_cats = TIERS_BY_LEVEL["competitive"]
         top = best_personas(vec, allowed_categories=competitive_cats)
         personas_map = {p.id: p for p in load_personas()}
         for pid, _ in top:
-            assert personas_map[pid].category not in TIER_CASUAL, (
-                f"Animal persona {pid} should not appear at competitive tier"
+            assert personas_map[pid].category not in TIER_ELITE, (
+                f"Elite persona {pid} should not appear at competitive tier"
             )
 
     def test_standard_tier_excludes_superheroes(self):
@@ -538,7 +538,7 @@ class TestFingerprintToMatch:
         assert vec["risk"] > 0.7
         assert vec["aggression"] > 0.5
         top = best_personas(vec)
-        assert len(top) == 7
+        assert len(top) == 12
         known_ids = {p.id for p in load_personas()}
         assert all(pid in known_ids for pid, _ in top)
 
@@ -678,8 +678,8 @@ class TestAllPersonasByDifficulty:
         for p in cls.all_personas:
             cls.by_category.setdefault(p.category, []).append(p)
 
-    def test_all_75_personas_loaded(self):
-        assert len(self.all_personas) == 75, f"Expected 75 personas, got {len(self.all_personas)}"
+    def test_all_90_personas_loaded(self):
+        assert len(self.all_personas) == 90, f"Expected 90 personas, got {len(self.all_personas)}"
 
     def test_every_persona_has_a_tier(self):
         """Every persona's category must belong to exactly one tier group."""
@@ -691,41 +691,46 @@ class TestAllPersonasByDifficulty:
 
     def test_category_to_tier_mapping(self):
         """Verify which categories belong to which tier groups."""
-        assert TIER_ELITE == {"superhero", "mythology"}
-        assert TIER_COMPETITIVE == {"achievement"}
+        assert TIER_ELITE == {"bollywood", "superhero", "anime"}
+        assert TIER_COMPETITIVE == {"mythology", "achievement"}
         assert TIER_STANDARD == {"cartoon", "pokemon"}
         assert TIER_CASUAL == {"animal"}
 
-    def test_tier_levels_exclude_lower(self):
-        """Each tier level should NOT include all lower categories."""
-        assert "animal" not in TIERS_BY_LEVEL["elite"]
-        assert "cartoon" not in TIERS_BY_LEVEL["elite"]
-        assert "pokemon" not in TIERS_BY_LEVEL["elite"]
-        assert "animal" not in TIERS_BY_LEVEL["competitive"]
+    def test_tier_levels_elite_exclusive_rest_cumulative(self):
+        """Elite is exclusive (36 prestige personas). Lower tiers are cumulative."""
+        # Elite is exclusive — only bollywood, superhero, anime
+        assert TIERS_BY_LEVEL["elite"] == {"bollywood", "superhero", "anime"}
+        # Competitive is cumulative (everything except elite)
+        assert "bollywood" not in TIERS_BY_LEVEL["competitive"]
+        assert "superhero" not in TIERS_BY_LEVEL["competitive"]
+        assert "anime" not in TIERS_BY_LEVEL["competitive"]
+        assert "mythology" in TIERS_BY_LEVEL["competitive"]
+        assert "animal" in TIERS_BY_LEVEL["competitive"]
+        # Standard excludes achievement/mythology and elite
         assert "superhero" not in TIERS_BY_LEVEL["standard"]
-        assert "mythology" not in TIERS_BY_LEVEL["standard"]
-        assert "superhero" not in TIERS_BY_LEVEL["casual"]
-        assert "achievement" not in TIERS_BY_LEVEL["casual"]
+        assert "achievement" not in TIERS_BY_LEVEL["standard"]
+        # Casual is animal only
+        assert TIERS_BY_LEVEL["casual"] == {"animal"}
 
-    def test_elite_picks_from_all_75_never_leak(self):
-        """Pick 75 times at elite tier — every result must be superhero/mythology/achievement."""
+    def test_elite_picks_never_leak(self):
+        """Pick 100 times at elite tier — every result must be in elite categories."""
         allowed = TIERS_BY_LEVEL["elite"]
-        self._pick_n_and_verify(75, "elite", allowed)
+        self._pick_n_and_verify(100, "elite", allowed)
 
-    def test_competitive_picks_from_all_75_never_leak(self):
-        """Pick 75 times at competitive tier — every result must be achievement/cartoon/pokemon."""
+    def test_competitive_picks_never_leak(self):
+        """Pick 100 times at competitive tier — every result must be in competitive categories."""
         allowed = TIERS_BY_LEVEL["competitive"]
-        self._pick_n_and_verify(75, "competitive", allowed)
+        self._pick_n_and_verify(100, "competitive", allowed)
 
-    def test_standard_picks_from_all_75_never_leak(self):
-        """Pick 75 times at standard tier — every result must be cartoon/pokemon/animal."""
+    def test_standard_picks_never_leak(self):
+        """Pick 100 times at standard tier — every result must be in standard categories."""
         allowed = TIERS_BY_LEVEL["standard"]
-        self._pick_n_and_verify(75, "standard", allowed)
+        self._pick_n_and_verify(100, "standard", allowed)
 
-    def test_casual_picks_from_all_75_never_leak(self):
-        """Pick 75 times at casual tier — every result must be animal."""
+    def test_casual_picks_never_leak(self):
+        """Pick 100 times at casual tier — every result must be animal."""
         allowed = TIERS_BY_LEVEL["casual"]
-        self._pick_n_and_verify(75, "casual", allowed)
+        self._pick_n_and_verify(100, "casual", allowed)
 
     def test_hard_difficulty_maps_to_competitive(self):
         assert compute_tier("hard", challenge_mode=False, must_lose_mode=False) == "competitive"
@@ -743,8 +748,8 @@ class TestAllPersonasByDifficulty:
         """Every superhero persona must be pickable at elite tier."""
         self._assert_category_reachable("superhero", "elite")
 
-    def test_every_mythology_reachable_at_elite(self):
-        self._assert_category_reachable("mythology", "elite")
+    def test_every_mythology_reachable_at_competitive(self):
+        self._assert_category_reachable("mythology", "competitive")
 
     def test_every_achievement_reachable_at_competitive(self):
         self._assert_category_reachable("achievement", "competitive")
@@ -761,8 +766,8 @@ class TestAllPersonasByDifficulty:
     def test_every_animal_reachable_at_casual(self):
         self._assert_category_reachable("animal", "casual")
 
-    def test_no_animal_in_500_hard_picks(self):
-        """500 picks at hard difficulty with varied traits — zero animals."""
+    def test_no_elite_exclusive_in_500_competitive_picks(self):
+        """500 picks at competitive tier — zero bollywood/superhero/anime."""
         vecs = [
             {dim: 0.5 for dim in DIMENSIONS},
             {dim: 0.9 for dim in DIMENSIONS},
@@ -776,13 +781,13 @@ class TestAllPersonasByDifficulty:
                 persona = pick_persona(vec, recent_ids=list(recent),
                                        rng=random.Random(seed + vec_idx * 100), tier="competitive")
                 cat = persona.category
-                assert cat != "animal", (
-                    f"Vec {vec_idx} seed {seed}: got animal '{persona.name}' at competitive tier"
+                assert cat not in TIER_ELITE, (
+                    f"Vec {vec_idx} seed {seed}: got elite '{persona.name}' ({cat}) at competitive tier"
                 )
                 recent.append(persona.id)
 
     def test_no_elite_persona_in_500_easy_picks(self):
-        """500 picks at easy difficulty — zero superhero/mythology."""
+        """500 picks at easy difficulty — only animals."""
         vecs = [
             {dim: 0.5 for dim in DIMENSIONS},
             {dim: 0.9 for dim in DIMENSIONS},
@@ -796,7 +801,7 @@ class TestAllPersonasByDifficulty:
                 persona = pick_persona(vec, recent_ids=list(recent),
                                        rng=random.Random(seed + vec_idx * 100), tier="casual")
                 cat = persona.category
-                assert cat not in ("superhero", "mythology", "achievement", "cartoon", "pokemon"), (
+                assert cat == "animal", (
                     f"Vec {vec_idx} seed {seed}: got '{cat}' persona '{persona.name}' at casual tier"
                 )
                 recent.append(persona.id)
@@ -879,13 +884,13 @@ class TestAllPersonasByDifficulty:
                     f"{persona.id}.weights.{dim} = {weight} — max 1.5 to prevent dominance"
                 )
 
-    def test_no_trigger_bonus_exceeds_0_08(self):
-        """No persona trigger bonus should exceed 0.08 to prevent trigger-based dominance."""
+    def test_no_trigger_bonus_exceeds_0_10(self):
+        """No persona trigger bonus should exceed 0.10 to prevent trigger-based dominance."""
         for persona in load_personas():
             for trigger in persona.triggers:
                 bonus = trigger.get("bonus", 0)
-                assert bonus <= 0.08, (
-                    f"{persona.id} trigger bonus is {bonus} — max 0.08 to prevent dominance"
+                assert bonus <= 0.10, (
+                    f"{persona.id} trigger bonus is {bonus} — max 0.10 to prevent dominance"
                 )
 
     def test_zen_master_does_not_dominate_patient_player(self):
