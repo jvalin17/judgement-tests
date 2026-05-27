@@ -1,8 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect } from "vitest";
-import { Card, CardBack } from "./Card";
-import { SettingsProvider } from "../../context/SettingsContext";
+import { Card } from "./Card";
 import { makeCard } from "../../test/helpers";
 
 function renderCard(overrides: Partial<{
@@ -96,27 +95,5 @@ describe("Card", () => {
     const { container } = renderCard({ small: true });
     const cardDiv = container.querySelector(".card");
     expect(cardDiv!.className).toContain("small");
-  });
-});
-
-describe("CardBack", () => {
-  it("renders without error", () => {
-    const { container } = render(
-      <SettingsProvider>
-        <CardBack />
-      </SettingsProvider>
-    );
-    expect(container.querySelector(".cardBack")).toBeInTheDocument();
-  });
-
-  it("applies small class when small=true", () => {
-    const { container } = render(
-      <SettingsProvider>
-        <CardBack small />
-      </SettingsProvider>
-    );
-    const cardBack = container.querySelector(".cardBack");
-    expect(cardBack).not.toBeNull();
-    expect(cardBack!.className).toContain("small");
   });
 });

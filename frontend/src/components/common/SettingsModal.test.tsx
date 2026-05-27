@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { SettingsProvider } from "../../context/SettingsContext";
 import { SettingsModal } from "./SettingsModal";
-import { CardBackDesign, TableColor, AnimationSpeed, CARD_BACK_LABELS, TABLE_COLOR_LABELS, ANIMATION_SPEED_LABELS } from "../../types";
+import { TableColor, AnimationSpeed, TABLE_COLOR_LABELS, ANIMATION_SPEED_LABELS } from "../../types";
 
 // Mock API calls that fire on mount
 vi.mock("../../services/api", () => ({
@@ -33,11 +33,6 @@ describe("SettingsModal", () => {
     expect(screen.getByText("Settings")).toBeTruthy();
   });
 
-  it("renders Card Back Design section", () => {
-    renderSettings();
-    expect(screen.getByText("Card Back Design")).toBeTruthy();
-  });
-
   it("renders Table Color section", () => {
     renderSettings();
     expect(screen.getByText("Table Color")).toBeTruthy();
@@ -46,13 +41,6 @@ describe("SettingsModal", () => {
   it("renders Animation Speed section", () => {
     renderSettings();
     expect(screen.getByText("Animation Speed")).toBeTruthy();
-  });
-
-  it("renders all card back options", () => {
-    renderSettings();
-    for (const label of Object.values(CARD_BACK_LABELS)) {
-      expect(screen.getByText(label)).toBeTruthy();
-    }
   });
 
   it("renders all table color options", () => {

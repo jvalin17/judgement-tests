@@ -23,16 +23,6 @@ describe("SettingsContext", () => {
     }).toThrow("useSettings must be used within a SettingsProvider");
   });
 
-  it("updateCardBack changes card back design", () => {
-    const { result } = renderHook(() => useSettings(), { wrapper });
-
-    act(() => {
-      result.current.updateCardBack("cockpit_navy" as any);
-    });
-
-    expect(result.current.settings.cardBack).toBe("cockpit_navy");
-  });
-
   it("updateTableColor changes table color", () => {
     const { result } = renderHook(() => useSettings(), { wrapper });
 
@@ -83,14 +73,13 @@ describe("SettingsContext", () => {
     const { result } = renderHook(() => useSettings(), { wrapper });
 
     act(() => {
-      result.current.updateCardBack("cockpit_navy" as any);
-    });
-    act(() => {
       result.current.updateTableColor("navy_blue" as any);
     });
+    act(() => {
+      result.current.updateAnimationSpeed("fast" as any);
+    });
 
-    expect(result.current.settings.cardBack).toBe("cockpit_navy");
     expect(result.current.settings.tableColor).toBe("navy_blue");
-    expect(result.current.settings.animationSpeed).toBe(DEFAULT_SETTINGS.animationSpeed);
+    expect(result.current.settings.animationSpeed).toBe("fast");
   });
 });

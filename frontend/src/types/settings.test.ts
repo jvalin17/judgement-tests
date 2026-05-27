@@ -1,21 +1,15 @@
 import { describe, it, expect } from "vitest";
 import {
-  CardBackDesign,
   TableColor,
   AnimationSpeed,
   DEFAULT_SETTINGS,
   TABLE_COLOR_MAP,
   TABLE_COLOR_LABELS,
-  CARD_BACK_LABELS,
   ANIMATION_SPEED_MAP,
   ANIMATION_SPEED_LABELS,
 } from "./settings";
 
 describe("DEFAULT_SETTINGS", () => {
-  it("has classic blue card back", () => {
-    expect(DEFAULT_SETTINGS.cardBack).toBe(CardBackDesign.CLASSIC_BLUE);
-  });
-
   it("has classic green table color", () => {
     expect(DEFAULT_SETTINGS.tableColor).toBe(TableColor.CLASSIC_GREEN);
   });
@@ -102,25 +96,6 @@ describe("TABLE_COLOR_LABELS", () => {
     expect(TABLE_COLOR_LABELS[TableColor.CLASSIC_GREEN]).toBe("Classic Green");
     expect(TABLE_COLOR_LABELS[TableColor.MIDNIGHT_BLACK]).toBe("Midnight");
     expect(TABLE_COLOR_LABELS[TableColor.ROYAL_PURPLE]).toBe("Royal Purple");
-  });
-});
-
-describe("CARD_BACK_LABELS", () => {
-  it("has labels for all 9 designs", () => {
-    expect(Object.keys(CARD_BACK_LABELS)).toHaveLength(9);
-  });
-
-  it("all labels are non-empty strings", () => {
-    for (const label of Object.values(CARD_BACK_LABELS)) {
-      expect(typeof label).toBe("string");
-      expect(label.length).toBeGreaterThan(0);
-    }
-  });
-
-  it("maps specific designs correctly", () => {
-    expect(CARD_BACK_LABELS[CardBackDesign.CLASSIC_BLUE]).toBe("Classic Blue");
-    expect(CARD_BACK_LABELS[CardBackDesign.BLACKBOX]).toBe("Black Box");
-    expect(CARD_BACK_LABELS[CardBackDesign.RED_EYE]).toBe("Red Eye");
   });
 });
 
