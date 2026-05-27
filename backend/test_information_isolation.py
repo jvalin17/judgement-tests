@@ -76,7 +76,7 @@ class TestFeatureVectorIsolation:
         big_hand = _make_hand()
         small_features = extract_bid_features(small_hand, _make_context(num_cards=1))
         big_features = extract_bid_features(big_hand, _make_context(num_cards=5))
-        assert len(small_features) == len(big_features) == 12
+        assert len(small_features) == len(big_features) == 14
 
     def test_play_features_fixed_length(self):
         """Different hands produce the same number of features."""
@@ -85,7 +85,7 @@ class TestFeatureVectorIsolation:
         context = _make_context(bids=[Bid(player_id="p1", amount=1)])
         small_features = extract_play_features(small_hand, small_hand, context)
         big_features = extract_play_features(big_hand, big_hand, context)
-        assert len(small_features) == len(big_features) == 11
+        assert len(small_features) == len(big_features) == 13
 
     def test_features_contain_no_card_objects(self):
         """Feature values must be plain numbers, never Card/Suit/Rank objects."""

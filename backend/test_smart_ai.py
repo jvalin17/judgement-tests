@@ -62,7 +62,7 @@ class TestBidFeatures:
         hand = _sample_hand()
         context = _make_context(num_cards=5)
         features = extract_bid_features(hand, context)
-        assert len(features) == 12
+        assert len(features) == 14
         assert all(isinstance(value, float) for value in features)
 
     def test_num_cards_is_first_feature(self):
@@ -77,7 +77,7 @@ class TestBidFeatures:
         bids = [Bid(player_id="p2", amount=1), Bid(player_id="p3", amount=2)]
         context = _make_context(num_cards=5, bids=bids)
         features = extract_bid_features(hand, context)
-        assert features[-1] == 1.0  # is_dealer
+        assert features[11] == 1.0  # is_dealer (index 11, before score_gap and round_progress)
 
 
 class TestPlayFeatures:
@@ -89,7 +89,7 @@ class TestPlayFeatures:
             bids=[Bid(player_id="p1", amount=2)],
         )
         features = extract_play_features(hand, valid_cards, context)
-        assert len(features) == 11
+        assert len(features) == 13
         assert all(isinstance(value, float) for value in features)
 
     def test_leading_flag(self):
