@@ -318,19 +318,20 @@ class TestSmartHardAI:
 
 
 class TestMakeStrategy:
-    def test_hard_without_smart(self):
+    def test_hard_returns_hard_ai(self):
         from backend.app.ai.hard import HardAI
-        strategy = _make_strategy(AIDifficulty.HARD, use_smart=False)
+        strategy = _make_strategy(AIDifficulty.HARD)
         assert isinstance(strategy, HardAI)
 
-    def test_hard_with_smart(self):
-        strategy = _make_strategy(AIDifficulty.HARD, use_smart=True)
-        assert isinstance(strategy, SmartHardAI)
-
-    def test_non_hard_ignores_smart_flag(self):
+    def test_easy_returns_easy_ai(self):
         from backend.app.ai.easy import EasyAI
-        strategy = _make_strategy(AIDifficulty.EASY, use_smart=True)
+        strategy = _make_strategy(AIDifficulty.EASY)
         assert isinstance(strategy, EasyAI)
+
+    def test_smart_hard_accepts_model(self):
+        from backend.app.ml.learning.decision_tree import DecisionTreeModel
+        ai = SmartHardAI(model=DecisionTreeModel())
+        assert ai._model.model_name == "decision_tree"
 
 
 # --- Integration: Smart bot in a full game ---
